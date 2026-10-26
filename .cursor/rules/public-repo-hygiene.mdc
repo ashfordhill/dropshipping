@@ -1,0 +1,44 @@
+---
+description: Dropshipping storefront repo only. Keeps the public repo free of the real brand, domain, suppliers, costs, customer data, and secrets
+globs: **/*
+alwaysApply: false
+---
+
+# Public repo hygiene (dropshipping repo)
+
+This repo is public, and the live store must not be traceable to it. These rules cover only the `dropshipping` repo.
+
+## Never in a tracked file, commit message, handoff entry, fixture, screenshot, or log line
+
+- The real brand name, domain, subdomains, logo, or other brand assets.
+- Real products, supplier names and contacts (WeChat IDs, phone numbers, emails, store URLs), costs, or margins.
+- Customer data of any kind.
+- Secrets: API keys, tokens, webhook signing secrets, Access credentials.
+
+## Where real values live
+
+- `private/` (gitignored): real brand packs, notes, and `private/denylist.txt`. Agents never write there and never print its contents; they read only the denylist, and only to run leak checks.
+- Cloudflare: D1 data, R2 assets, and Wrangler secrets. Local secrets go in the gitignored `.dev.vars`.
+
+## Use instead
+
+- The made-up demo brands (`demo`, `demo-alt`) and fictional products, vendors, and customers under `fixtures/`.
+- Placeholders such as `<production-domain>` and `<brand-slug>` in docs and runbooks.
+- `wrangler.jsonc` with a generic Worker name, no `routes`, `workers_dev: false`, and `preview_urls: false`. Domains are attached in the Cloudflare dashboard.
+- No public source maps, repo URL, or author names in the client bundle.
+
+## Leak check
+
+- Denylist format: one case-insensitive string per line; `#` starts a comment line; `sha256:<hex>` lines match files by content hash (logos and other binaries). Strip carriage returns when reading it: the editor host is Windows and may save it with CRLF endings, which silently breaks matching.
+- From Slice 1, `npm run leak-check` and the pre-commit hook scan tracked and staged files and print only file names, never the matched strings. When `private/denylist.txt` is absent (CI), the check is skipped with a notice.
+- Until then (Slice 0), check every file about to be committed by hand, printing file names only, and read the commit message yourself:
+
+```bash
+deny=$(mktemp)
+tr -d '\r' < private/denylist.txt | grep -v -e '^#' -e '^sha256:' -e '^[[:space:]]*$' > "$deny"
+git ls-files -co --exclude-standard -z | xargs -0 grep -IliF -f "$deny"
+git ls-files -co --exclude-standard -z | xargs -0 sha256sum | grep -iF -f <(tr -d '\r' < private/denylist.txt | sed -n 's/^sha256://p')
+rm -f "$deny"
+```
+
+Both `grep` commands must print nothing. If either prints a file, remove the leak before committing.
