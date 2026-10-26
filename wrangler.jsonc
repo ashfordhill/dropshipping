@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "storefront",
+  "compatibility_date": "2026-10-26",
+  "main": "./src/worker/index.ts",
+  // AD-03: deployed Workers have no routes. Domains are attached in the dashboard.
+  "workers_dev": false,
+  "preview_urls": false,
+  "keep_vars": true,
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "storefront",
+      // Placeholder until the database is created on the owner's machine.
+      "database_id": "00000000-0000-4000-8000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "storefront-media"
+    }
+  ],
+  "workflows": [
+    {
+      "name": "order-workflow",
+      "binding": "ORDER_WORKFLOW",
+      "class_name": "OrderWorkflow"
+    }
+  ],
+  "send_email": [{ "name": "EMAIL" }]
+}

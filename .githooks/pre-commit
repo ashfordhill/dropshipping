@@ -1,0 +1,6 @@
+#!/bin/sh
+# AD-05: block a commit when tracked or staged content matches the private denylist.
+set -eu
+root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+cd "$root"
+node scripts/leak-check.mjs
