@@ -12,7 +12,7 @@ Besides having a website for listing products and placing orders, it would be id
 
 ![a](.docs/jeeves/v1.png)
 
-I had Fable 6.2 take a look at the diagram. It addressed the 'too many arrows' thing on its own.
+I had Fable 5.2 take a look at the diagram. It addressed the 'too many arrows' thing on its own.
 
 - The original build plan left out user accounts on purpose
 - MockAdapter is to help validate real orders
